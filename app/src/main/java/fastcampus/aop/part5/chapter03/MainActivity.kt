@@ -23,6 +23,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.isGone
 import fastcampus.aop.part5.chapter03.databinding.ActivityMainBinding
 import fastcampus.aop.part5.chapter03.extensions.loadCenterCrop
 import fastcampus.aop.part5.chapter03.util.PathUtil
@@ -58,6 +59,8 @@ class MainActivity : AppCompatActivity() {
     private var root: View? = null
 
     private var isCapturing: Boolean = false
+
+    private var isFlashEnabled: Boolean = false
 
     private var uriList = mutableListOf<Uri>()
 
@@ -135,6 +138,7 @@ class MainActivity : AppCompatActivity() {
                 preview.setSurfaceProvider(viewFinder.surfaceProvider)
                 bindCaptureListener()
                 bindZoomListener()
+                initFlashAndAddListener()
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -159,6 +163,19 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun initFlashAndAddListener() = with(binding) {
+        val hasFlash = camera?.cameraInfo?.hasFlashUnit() ?: false
+        flashSwitch.isGone = hasFlash.not()
+        if(hasFlash) {
+            flashSwitch.setOnCheckedChangeListener { _, isChecked ->
+                isFlashEnabled = isChecked
+            }
+        } else {
+            isFlashEnabled = false
+            flashSwitch.setOnCheckedChangeListener(null)
+        }
+    }
+
     private fun bindCaptureListener() = with(binding) {
         captureButton.setOnClickListener {
             if (!isCapturing) {
@@ -179,6 +196,7 @@ class MainActivity : AppCompatActivity() {
                 ).format(System.currentTimeMillis()) + ".jpg")
 
         val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
+        if(isFlashEnabled) flashLight(true)
         imageCapture.takePicture(outputOptions, cameraExecutor, object : ImageCapture.OnImageSavedCallback {
             override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
                 val savedUri = outputFileResults.savedUri ?: Uri.fromFile(photoFile)
@@ -190,9 +208,17 @@ class MainActivity : AppCompatActivity() {
             override fun onError(e: ImageCaptureException) {
                 e.printStackTrace()
                 isCapturing = false
+                flashLight(false)
             }
         })
 
+    }
+
+    private fun flashLight(light: Boolean) {
+        val hasFlash = camera?.cameraInfo?.hasFlashUnit() ?: false
+        if(hasFlash) {
+            camera?.cameraControl?.enableTorch(light)
+        }
     }
 
     private fun updateSavedImageContent() {
@@ -204,9 +230,11 @@ class MainActivity : AppCompatActivity() {
                     binding.previewImageVIew.loadCenterCrop(url = it.toString(), corner = 4f)
                 }
                 uriList.add(it)
+                flashLight(false)
                 false
             } catch (e: FileNotFoundException) {
                 e.printStackTrace()
+                flashLight(false)
                 false
             }
         }
