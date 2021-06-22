@@ -139,6 +139,7 @@ class MainActivity : AppCompatActivity() {
                 bindCaptureListener()
                 bindZoomListener()
                 initFlashAndAddListener()
+                bindPreviewImageViewClickListener()
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -182,6 +183,12 @@ class MainActivity : AppCompatActivity() {
                 isCapturing = true
                 captureCamera()
             }
+        }
+    }
+
+    private fun bindPreviewImageViewClickListener() = with(binding) {
+        previewImageVIew.setOnClickListener {
+            startActivity(ImageListActivity.newIntent(this@MainActivity, uriList))
         }
     }
 
