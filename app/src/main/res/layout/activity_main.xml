@@ -45,6 +45,17 @@
         app:layout_constraintTop_toBottomOf="@id/controllerGuideline"
         app:layout_constraintBottom_toBottomOf="parent" />
 
+    <ImageView
+        android:id="@+id/previewImageVIew"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        app:layout_constraintBottom_toBottomOf="@id/captureButton"
+        app:layout_constraintTop_toTopOf="@id/captureButton"
+        android:layout_marginStart="16dp"
+        app:layout_constraintStart_toStartOf="parent"
+        android:contentDescription="@string/image_preview"
+        android:background="@drawable/button_round_corner_4_black_24"/>
+
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
